@@ -40,7 +40,8 @@ and untouched by this package).
 
 v1: cross-facet AND filtering, precise facet counts, and range facets are built and verified live against
 a real OpenSearch 1.3 instance. `inner_hits`-based storefront tile-swap is built and verified live but
-off by default. Not yet tagged/released.
+off by default. 68 tests (55 Client, 8 Zed, 5 Presentation), phpcs, phpmd, rector, and phpstan level 8
+clean. Not yet tagged/released.
 
 ## Root cause
 
