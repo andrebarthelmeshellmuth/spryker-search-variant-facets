@@ -125,12 +125,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: packages/spryker-community/search-variant-facets
-
-      - uses: actions/checkout@v4
-        with:
           repository: spryker-shop/b2b-demo-marketplace
           path: shop
+
+      # Nested INSIDE shop/, at the exact relative path this package's own dev environment uses
+      # (packages/spryker-community/<name>) — phpstan.neon/codeception.yml paths and console command
+      # invocations below all assume that layout, matching how a real adopter installs this package.
+      - uses: actions/checkout@v4
+        with:
+          path: shop/packages/spryker-community/search-variant-facets
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -146,7 +149,7 @@ jobs:
       - name: Wire this checkout into the shop as a path repository
         working-directory: shop
         run: |
-          composer config repositories.search-variant-facets path ../packages/spryker-community/search-variant-facets
+          composer config repositories.search-variant-facets path packages/spryker-community/search-variant-facets
           composer require spryker-community/search-variant-facets:@dev --no-interaction --no-progress -W
 
       - name: Generate transfers and IDE auto-completion stubs
