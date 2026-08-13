@@ -20,7 +20,7 @@ declare(strict_types = 1);
  * Usage: php fixtures/apply.php /path/to/b2b-demo-marketplace
  *
  * Then, from that demoshop checkout:
- *   ./docker/sdk console data:import product-attribute-key   # MUST run before product-search-attribute
+ *   ./docker/sdk console data:import product-attribute-key # MUST run before product-search-attribute
  *   ./docker/sdk console data:import product-search-attribute
  *   ./docker/sdk console data:import product-concrete
  *   ./docker/sdk console publish:trigger-events -r product_abstract -i <id_product_abstract of STL-7010 and HP-ECO-45K>
@@ -71,8 +71,6 @@ function readCsv(string $path): array
  * @param string $path
  * @param array<int, string> $header
  * @param array<int, array<string, string>> $rows
- *
- * @return void
  */
 function writeCsv(string $path, array $header, array $rows): void
 {
@@ -114,7 +112,7 @@ echo "product_attribute_key.csv: $added row(s) added\n";
 $path = $dataDir . '/product_search_attribute.csv';
 $csv = readCsv($path);
 $existingKeys = array_column($csv['rows'], 'key');
-$nextPosition = 1 + (int)max(array_map('intval', array_column($csv['rows'], 'position') ?: [0]));
+$nextPosition = 1 + max(array_map(fn (mixed $value): int => (int)$value, array_column($csv['rows'], 'position') ?: [0]));
 
 $newFacets = [
     ['key' => 'limitrange', 'filter_type' => 'multi-select', 'key.en_US' => 'Trip Temperature', 'key.de_DE' => 'Auslösetemperatur'],
@@ -146,7 +144,7 @@ echo "product_search_attribute.csv: $added row(s) added\n";
  * STL-7010's limitrange/packaging_unit go in slots 1/2; HP-ECO-45K's poweroutput (pre-existing, slot 1)
  * is left untouched, leadtime_days goes in slot 2.
  *
- * @var array<string, array{slot1?: array{key: string, value: string}, slot2?: array{key: string, value: string}, isSearchable?: bool}>
+ * @var array<string, array{slot1?: array{key: string, value: string}, slot2?: array{key: string, value: string}, isSearchable?: bool}> $concreteEdits
  */
 $concreteEdits = [
     'STL-7010-1' => ['slot1' => ['key' => 'limitrange', 'value' => '90°C'], 'slot2' => ['key' => 'packaging_unit', 'value' => 'Item']],
@@ -186,11 +184,13 @@ foreach ($csv['rows'] as &$row) {
             $keyField = "attribute_key_{$slotNum}{$localeSuffix}";
             $valueField = "value_{$slotNum}{$localeSuffix}";
 
-            if (($row[$keyField] ?? null) !== $key || ($row[$valueField] ?? null) !== $value) {
-                $row[$keyField] = $key;
-                $row[$valueField] = $value;
-                $rowChanged = true;
+            if (!(($row[$keyField] ?? null) !== $key) && !(($row[$valueField] ?? null) !== $value)) {
+                continue;
             }
+
+            $row[$keyField] = $key;
+            $row[$valueField] = $value;
+            $rowChanged = true;
         }
     }
 
@@ -198,16 +198,20 @@ foreach ($csv['rows'] as &$row) {
         $wanted = $edit['isSearchable'] ? '1' : '0';
 
         foreach (['is_searchable.de_DE', 'is_searchable.en_US'] as $field) {
-            if (($row[$field] ?? null) !== $wanted) {
-                $row[$field] = $wanted;
-                $rowChanged = true;
+            if (!(($row[$field] ?? null) !== $wanted)) {
+                continue;
             }
+
+            $row[$field] = $wanted;
+            $rowChanged = true;
         }
     }
 
-    if ($rowChanged) {
-        $changed++;
+    if (!$rowChanged) {
+        continue;
     }
+
+    $changed++;
 }
 unset($row);
 
