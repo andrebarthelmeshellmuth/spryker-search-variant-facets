@@ -112,7 +112,7 @@ echo "product_attribute_key.csv: $added row(s) added\n";
 $path = $dataDir . '/product_search_attribute.csv';
 $csv = readCsv($path);
 $existingKeys = array_column($csv['rows'], 'key');
-$nextPosition = 1 + max(array_map('intval', array_column($csv['rows'], 'position') ?: [0]));
+$nextPosition = 1 + max(array_map(fn (mixed $value): int => (int)$value, array_column($csv['rows'], 'position') ?: [0]));
 
 $newFacets = [
     ['key' => 'limitrange', 'filter_type' => 'multi-select', 'key.en_US' => 'Trip Temperature', 'key.de_DE' => 'Auslösetemperatur'],
