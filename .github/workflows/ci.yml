@@ -157,6 +157,11 @@ jobs:
         run: |
           vendor/bin/console transfer:generate
           vendor/bin/console dev:ide-auto-completion:generate
+          # Generated\Shared\Search\PageIndexMap (this package's own MatchingVariantResultFormatterPlugin
+          # references PageIndexMap::SEARCH_RESULT_DATA) comes from a SEPARATE generator than
+          # transfer:generate — confirmed empirically ("Access to constant ... on an unknown class"
+          # without this). Also pure schema-file codegen, no DB/ES needed.
+          vendor/bin/console search:setup:source-map
 
       - name: phpstan
         working-directory: shop
