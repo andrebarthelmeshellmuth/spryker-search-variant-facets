@@ -15,8 +15,11 @@ come from two different concretes, not one that's actually red **and** 40 at onc
 - [How it works](#how-it-works)
 - [Range facets](#range-facets)
 - [Storefront tile-swap (optional)](#storefront-tile-swap-optional)
+- [Facet usefulness filtering (optional)](#facet-usefulness-filtering-optional)
+- [Multi-valued attributes](#multi-valued-attributes)
 - [Limitations](#limitations)
 - [Porting this fix into Spryker core](#porting-this-fix-into-spryker-core)
+- [Demo fixture](#demo-fixture-for-testing-against-a-real-b2b-demo-marketplace-checkout)
 - [Testing and CI](#testing-and-ci)
 - [License](#license)
 
@@ -152,6 +155,26 @@ console queue:worker:start --stop-when-empty
 
 The package auto-detects which facets are variant-scoped by reading the live index mapping — no separate
 enable step per facet.
+
+### 7. Verify the installation
+
+```bash
+vendor/bin/console search-variant-facets:check-installation
+```
+
+Steps 4-5 above fail *silently* when missed — facets just keep matching OR-across-concretes as core
+always did, with nothing in any log to say why. This command checks the core namespace registration,
+that every plugin class is loadable and instantiable, that the search engine is reachable, and that the
+`variant-facet` index mapping is present and correctly shaped (catching the `dynamic_templates` merge
+corruption this README warns about under ["How it works"](#how-it-works), if it were ever reintroduced by
+a hand-edited mapping).
+
+Unlike the sibling `spryker-community` packages, there is no Yves-side counterpart — this package ships no
+Yves code of its own to check (see ["Storefront tile-swap"](#storefront-tile-swap-optional) for why). What
+the console command genuinely cannot see — whether your project's `CatalogDependencyProvider` actually
+*replaced* core's `FacetQueryExpanderPlugin`/`FacetResultFormatterPlugin` (step 5) rather than registering
+both, and whether `VariantFacetMapExpanderPlugin` (step 4) is registered *last* — is printed out explicitly
+at the end of a clean run, with the exact thing to go check by hand.
 
 ## Configuration
 
