@@ -117,6 +117,11 @@ jobs:
       # "Environment variable APPLICATION_ENV must be set" otherwise) — "development" is the standard
       # lenient Spryker environment; nothing this job runs actually reads environment-specific config.
       APPLICATION_ENV: development
+      # config_default.php gates `dev:*` console commands (incl. dev:ide-auto-completion:generate)
+      # behind ConsoleConstants::ENABLE_DEVELOPMENT_CONSOLE_COMMANDS, which reads this exact env var —
+      # confirmed empirically ("There are no commands defined in the dev:ide-auto-completion namespace"
+      # without it).
+      DEVELOPMENT_CONSOLE_COMMANDS: '1'
     steps:
       - uses: actions/checkout@v4
         with:
