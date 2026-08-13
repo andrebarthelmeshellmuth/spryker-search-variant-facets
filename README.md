@@ -344,6 +344,15 @@ WebDriver browser session (`docker/sdk testing`, not plain `docker/sdk cli` — 
 the fixture implies, closing the gap an earlier version of this README used to flag ("a full CSV-fixture
 E2E wasn't possible") for both the cross-facet-AND case and range facets.
 
+CI's `host-shop` job automates the "host Spryker shop" requirement above for `phpstan` and the Client/Zed
+Codeception suites: it checks out the public `spryker-shop/b2b-demo-marketplace`, wires this package in as
+a path repository (the same shape the Installation section above documents), runs
+`console transfer:generate` + `console dev:ide-auto-completion:generate` (both pure codegen — no
+DB/Redis/Elasticsearch needed), then runs phpstan and the two suites against it. The WebDriver
+Presentation suite is deliberately NOT run in CI — it needs a live OpenSearch-backed catalog with this
+package's own fixture applied plus a real browser session, which needs the full docker-compose stack this
+repo's plain GitHub Actions runner doesn't have; it stays a local/manual gate.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

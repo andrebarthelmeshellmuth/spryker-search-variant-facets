@@ -92,3 +92,66 @@ jobs:
       - run: vendor/bin/phpmd src github phpmd.xml
       - name: Public method count (Facades/Factories exempt)
         run: vendor/bin/phpmd src github phpmd-public-methods.xml
+
+  host-shop:
+    # phpstan and this package's own Codeception suites both need a real Spryker host shop: their
+    # DependencyProviders/Testers resolve against the shop's GENERATED Locator and
+    # Generated\Shared\Transfer\* classes, neither of which a standalone package's own composer.json can
+    # produce (see phpstan.neon's own bootstrapFiles comment and the README's "Testing and CI" section).
+    # Combined into ONE job (phpstan, then Client+Zed suites) rather than two, so the shop is only
+    # installed once — that install step dominates this job's runtime.
+    #
+    # Uses the public spryker-shop/b2b-demo-marketplace as that host shop, wired to this checkout via a
+    # composer path-repository — the same install shape this package's own README documents for a real
+    # adopter, just automated. `transfer:generate` and `dev:ide-auto-completion:generate` are pure
+    # static codegen over the installed package set (confirmed empirically: both run clean with no
+    # DB/Redis/Elasticsearch service present) — no docker-compose stack needed for phpstan or these two
+    # suites. The WebDriver Presentation suite is deliberately NOT run here: it needs a live
+    # OpenSearch-backed catalog with this package's own fixture applied plus a real browser session,
+    # which does need that full stack — out of scope for a plain GitHub Actions runner without
+    # self-hosted infra. That suite stays a local/manual gate (see the README).
+    name: phpstan + Codeception (host shop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packages/spryker-community/search-variant-facets
+
+      - uses: actions/checkout@v4
+        with:
+          repository: spryker-shop/b2b-demo-marketplace
+          path: shop
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Wire this checkout into the shop as a path repository
+        working-directory: shop
+        run: |
+          composer config repositories.search-variant-facets path ../packages/spryker-community/search-variant-facets
+          composer require spryker-community/search-variant-facets:@dev --no-interaction --no-progress -W
+
+      - name: Generate transfers and IDE auto-completion stubs
+        working-directory: shop
+        run: |
+          vendor/bin/console transfer:generate
+          vendor/bin/console dev:ide-auto-completion:generate
+
+      - name: phpstan
+        working-directory: shop
+        run: vendor/bin/phpstan analyse -c packages/spryker-community/search-variant-facets/phpstan.neon packages/spryker-community/search-variant-facets/src/
+
+      - name: Codeception build
+        working-directory: shop
+        run: |
+          vendor/bin/codecept build -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Client/VariantFacets/codeception.yml
+          vendor/bin/codecept build -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Zed/VariantFacets/codeception.yml
+
+      - name: Codeception run (Client + Zed — unit-level, no DB/ES fixtures needed)
+        working-directory: shop
+        run: |
+          vendor/bin/codecept run -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Client/VariantFacets/codeception.yml
+          vendor/bin/codecept run -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Zed/VariantFacets/codeception.yml
