@@ -12,6 +12,7 @@ return RectorConfig::configure()
         __DIR__ . '/src',
         __DIR__ . '/tests',
         __DIR__ . '/tools',
+        __DIR__ . '/fixtures',
     ])
     ->withSkip([
         __DIR__ . '/tests/*/_support/_generated',
