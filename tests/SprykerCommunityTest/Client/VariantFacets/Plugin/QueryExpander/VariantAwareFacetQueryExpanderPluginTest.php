@@ -90,7 +90,6 @@ class VariantAwareFacetQueryExpanderPluginTest extends Unit
     {
         $plugin = new VariantAwareFacetQueryExpanderPlugin();
         $method = new ReflectionMethod($plugin, 'normalizeRangeValue');
-        $method->setAccessible(true);
 
         /** @var array{min: float|null, max: float|null} $result */
         $result = $method->invoke($plugin, $value);
