@@ -127,6 +127,11 @@ jobs:
           php-version: '8.4'
           coverage: none
           tools: composer:v2
+          # grpc: spryker/opentelemetry (a transitive dependency of this demo shop, unrelated to this
+          # package) requires open-telemetry/transport-grpc, which requires ext-grpc to even resolve via
+          # composer — confirmed empirically (composer require fails at the dependency-resolution step,
+          # before install, without this). Not actually exercised by transfer:generate/phpstan/codecept.
+          extensions: grpc
 
       - name: Wire this checkout into the shop as a path repository
         working-directory: shop
