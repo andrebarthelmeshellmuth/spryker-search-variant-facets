@@ -112,6 +112,11 @@ jobs:
     # self-hosted infra. That suite stays a local/manual gate (see the README).
     name: phpstan + Codeception (host shop)
     runs-on: ubuntu-latest
+    env:
+      # Required just to boot the console app / Config bootstrap at all (confirmed empirically:
+      # "Environment variable APPLICATION_ENV must be set" otherwise) — "development" is the standard
+      # lenient Spryker environment; nothing this job runs actually reads environment-specific config.
+      APPLICATION_ENV: development
     steps:
       - uses: actions/checkout@v4
         with:
