@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<transfers xmlns="spryker:transfer-01"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="spryker:transfer-01 http://static.spryker.com/transfer-01.xsd">
+
+    <!-- Extensions of core ProductPageSearch transfers carrying per-concrete facet data through the
+         publish pipeline: bulk-loaded per abstract (data loader), copied onto the page-search transfer
+         (data expander), and finally set on the page map (map expander), from where the core document
+         mapper writes any modified PageMap property named after a page.json field verbatim into the
+         Elasticsearch document (see Shared/VariantFacets/Schema/page.json's "variant-facet" field). -->
+
+    <!-- Both are plain (not typed-sub-transfer) arrays deliberately, matching search-ranking's own
+         `scores` field: a real `Foo[]` sub-transfer property's setter requires an ArrayObject of
+         transfer objects, but the map-expander stage only ever has the already-array-flattened form
+         (`AbstractTransfer::toArray()`'s output) to hand it — a plain `array` property's setter accepts
+         that directly, no reconstruction round-trip needed. Each entry has the shape
+         {sku: string, vals: {<facetKey>: string|string[], ...}, nums: {<facetKey>: float, ...}} — sku
+         identifies the concrete for inner_hits/tile-swap use; a vals entry is an array of strings for a
+         `product_management_attribute.is_multiple` attribute (a concrete can carry more than one value
+         at once, e.g. a striped shoe that's both red AND green — OpenSearch keyword fields are natively
+         multi-valued so this needs no query-side handling). vals/nums only ever contain the facet keys actually
+         configured + present on that concrete, never padded with nulls for facets it doesn't have. -->
+    <transfer name="ProductPageSearch">
+        <property name="variantAttributes" type="array" singular="variantAttribute"/>
+    </transfer>
+
+    <transfer name="PageMap">
+        <property name="variantFacet" type="array" singular="variantFacetEntry"/>
+    </transfer>
+
+</transfers>

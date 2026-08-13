@@ -1,0 +1,74 @@
+{
+    "name": "spryker-community/search-variant-facets",
+    "type": "library",
+    "description": "Cross-facet AND for product variants: fixes Spryker core's OR-across-concretes facet indexing so selecting values from different facets (e.g. color=red, size=40) only matches abstracts where a single concrete actually carries that combination.",
+    "license": "MIT",
+    "keywords": [
+        "spryker",
+        "elasticsearch",
+        "opensearch",
+        "search",
+        "facets",
+        "variants",
+        "product-variants"
+    ],
+    "require": {
+        "php": ">=8.3",
+        "spryker/kernel": "^3.30.0",
+        "spryker/product": "^6.0.0",
+        "spryker/product-page-search": "^3.0.0",
+        "spryker/product-page-search-extension": "^1.7.0",
+        "spryker/product-search": "^5.0.0",
+        "spryker/search-elasticsearch": "^1.10.0",
+        "spryker/search-extension": "^1.2.0",
+        "spryker/store": "^1.19.0",
+        "spryker/transfer": "^3.25.0"
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.0.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
+        "phpmd/phpmd": "^2.15.0",
+        "phpstan/phpstan": "^2.0.0",
+        "phpunit/phpunit": "^10.0.0 || ^11.0.0",
+        "rector/rector": "^2.0",
+        "spryker/code-sniffer": "^0.17.30"
+    },
+    "scripts": {
+        "check-floors": [
+            "@composer update --prefer-lowest --prefer-stable --no-dev --no-interaction",
+            "php tools/floor-check.php"
+        ],
+        "rector": "rector process",
+        "rector-dry-run": "rector process --dry-run",
+        "phpstan": "phpstan analyse -c phpstan.neon src/"
+    },
+    "scripts-descriptions": {
+        "check-floors": "Verifies the declared dependency floors are real: resolves every constraint to its oldest allowed version (production deps only) and asserts each vendor symbol used in src/ actually exists there.",
+        "rector": "Applies Rector's configured rule sets (PHP floor upgrades + level-0 dead-code/code-quality) to src/, tests/, and tools/.",
+        "rector-dry-run": "Shows what Rector would change without writing anything.",
+        "phpstan": "Static analysis at level 8. Must be run from a host shop (see README) — needs the shop's generated Generated\\Shared\\Transfer\\* classes and a freshly regenerated Ide/AutoCompletion stub, neither of which this package can produce standalone."
+    },
+    "autoload": {
+        "psr-4": {
+            "SprykerCommunity\\": "src/SprykerCommunity/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SprykerCommunityTest\\": "tests/SprykerCommunityTest/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Andre Barthelmes",
+            "role": "Developer"
+        }
+    ]
+}
