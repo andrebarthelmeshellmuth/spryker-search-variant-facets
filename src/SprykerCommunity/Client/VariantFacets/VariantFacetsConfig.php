@@ -64,9 +64,9 @@ class VariantFacetsConfig extends AbstractBundleConfig
 
     /**
      * Whether to hide a variant-scoped facet (or, for a range facet, its slider) when it genuinely
-     * cannot narrow the current result set any further — ported from Produktkonfigurator's
-     * `isFacetUseful()`, made precise by this package's exact per-concrete counts (under core's
-     * OR-across-concretes counts, "this doesn't narrow anything" was only ever an approximation).
+     * cannot narrow the current result set any further, made precise by this package's exact
+     * per-concrete counts (under core's OR-across-concretes counts, "this doesn't narrow anything" was
+     * only ever an approximation).
      * Off by default: this is a UX opinion (hide noise vs. show every option), not a correctness fix, and
      * whether it's right depends on the audience (a B2B/professional buyer may want to see every
      * attribute value regardless of whether it currently narrows). See the README's "Facet usefulness

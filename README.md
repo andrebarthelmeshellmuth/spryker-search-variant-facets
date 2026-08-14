@@ -253,11 +253,10 @@ consumed — a plain project-level Twig read, e.g.:
 
 ## Facet usefulness filtering (optional)
 
-Off by default. `Produktkonfigurator` (a real client project this author has worked on) hides a facet, or
-a facet value, once it can no longer narrow the current result set — e.g. a value where every remaining
-product already has it. Under core's OR-across-concretes counts that was only ever an approximation;
-under this package's exact per-concrete counts it's now a precise statement, which is what makes the
-feature worth offering here rather than leaving it as a Produktkonfigurator-specific opinion.
+Off by default. This feature hides a facet, or a facet value, once it can no longer narrow the current
+result set — e.g. a value where every remaining product already has it. Under core's OR-across-concretes
+counts that was only ever an approximation; under this package's exact per-concrete counts it's now a
+precise statement, which is what makes the feature worth offering here as a general-purpose option.
 
 Enable via `Pyz\Client\VariantFacets\VariantFacetsConfig::isUselessFacetFilteringEnabled()`. The rule,
 applied only to variant-scoped facets (everything else is untouched, exactly as with the rest of this
@@ -275,12 +274,12 @@ every attribute value regardless of whether it currently narrows anything. Verif
 search down to a single matching concrete via one facet correctly collapses and hides an unrelated,
 no-longer-discriminating facet entirely, while a facet with an active selection always stays visible.
 
-Ported from Produktkonfigurator's `FacetResultFormatterPlugin::isFacetUseful()`/`isSingleFacetUseful()`,
-simplified: the original's `count($values) > 2 && !allValuesEqualTheTotal` branch is subsumed by its own
-"at least one value reduces the set" branch (a value's count can never exceed the total, so those two
-conditions are logically the same once you drop the `>2` gate) — ported as the two conditions actually
-do, not the redundant three-way OR. Produktkonfigurator's grouped min/max range-facet-pair machinery
-wasn't ported — this package's range facets are single, ungrouped, so it doesn't apply.
+The rule intentionally omits a `count($values) > 2 && !allValuesEqualTheTotal` condition sometimes seen
+in similar implementations: it's subsumed by the "at least one value reduces the set" branch above (a
+value's count can never exceed the total, so those two conditions are logically the same once you drop
+the `>2` gate) — a redundant three-way OR collapses to the two conditions actually implemented here.
+Grouped min/max range-facet-pair handling is not implemented — this package's range facets are single,
+ungrouped, so it doesn't apply.
 
 ## Multi-valued attributes
 
@@ -306,6 +305,18 @@ skipped rather than guessed at.
   dynamically-typed sub-fields per facet key rather than one static field per facet name — for catalogs
   with very large numbers of concretes per abstract or very many variant-scoped facet keys, measure before
   adopting at scale.
+- **Assumes one document per abstract, full stop.** Every concrete is represented purely as a nested
+  entry inside its abstract's own document (`variant-facet`) — this package has no notion of a concrete
+  ALSO existing as its own separate, top-level, independently-searchable document in the same index (an
+  index shape some shops build so a search can directly return/switch to an individual orderable
+  variant, not just narrow which abstract's tile is shown). In that kind of setup, `resultTotalHits`
+  (used throughout ["Facet usefulness filtering"](#facet-usefulness-filtering-optional)) is ambiguous —
+  it can't mean one thing across two differently-shaped document types sharing a result set — and the
+  nested-tuple aggregation machinery in ["How it works"](#how-it-works) simply doesn't apply to a
+  concrete-type document that already carries its own flat, un-nested facet values. Supporting that would
+  need its own design (likely: usefulness filtering and the aggregation builder both becoming aware of
+  which document-type mode a given search is running in), not a small change to this package as it
+  stands.
 
 ## Porting this fix into Spryker core
 
