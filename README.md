@@ -274,10 +274,6 @@ every attribute value regardless of whether it currently narrows anything. Verif
 search down to a single matching concrete via one facet correctly collapses and hides an unrelated,
 no-longer-discriminating facet entirely, while a facet with an active selection always stays visible.
 
-The rule intentionally omits a `count($values) > 2 && !allValuesEqualTheTotal` condition sometimes seen
-in similar implementations: it's subsumed by the "at least one value reduces the set" branch above (a
-value's count can never exceed the total, so those two conditions are logically the same once you drop
-the `>2` gate) — a redundant three-way OR collapses to the two conditions actually implemented here.
 Grouped min/max range-facet-pair handling is not implemented — this package's range facets are single,
 ungrouped, so it doesn't apply.
 
