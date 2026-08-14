@@ -13,11 +13,11 @@ use ArrayObject;
 use Generated\Shared\Transfer\FacetConfigTransfer;
 use Generated\Shared\Transfer\FacetSearchResultTransfer;
 use Generated\Shared\Transfer\FacetSearchResultValueTransfer;
-use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilder;
+use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilderInterface;
 
 class VariantFacetExtractor implements VariantFacetExtractorInterface
 {
-    public function __construct(protected VariantFacetAggregationBuilder $aggregationBuilder)
+    public function __construct(protected VariantFacetAggregationBuilderInterface $aggregationBuilder)
     {
     }
 
@@ -107,7 +107,7 @@ class VariantFacetExtractor implements VariantFacetExtractorInterface
             return $aggregations[$nestedName] ?? null;
         }
 
-        $globalName = VariantFacetAggregationBuilder::AGGREGATION_GLOBAL_PREFIX . $facetName;
+        $globalName = VariantFacetAggregationBuilderInterface::AGGREGATION_GLOBAL_PREFIX . $facetName;
         $rootFilterName = $this->aggregationBuilder->getRootFilterAggregationName($facetName);
 
         return $aggregations[$globalName][$rootFilterName][$nestedName] ?? null;

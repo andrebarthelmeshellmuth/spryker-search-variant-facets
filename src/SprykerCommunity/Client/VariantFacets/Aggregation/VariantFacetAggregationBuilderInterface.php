@@ -15,15 +15,26 @@ use Elastica\Query\BoolQuery;
 interface VariantFacetAggregationBuilderInterface
 {
     /**
+     * The prefix `VariantFacetExtractor`/`VariantRangeExtractor` strip back off a `global` aggregation's
+     * name to recover the facet name it belongs to — part of the actual contract between whatever builds
+     * these aggregations and whatever reads their response back apart, not an implementation detail of
+     * one specific builder, hence declared here rather than on a single implementation.
+     *
+     * @var string
+     */
+    public const AGGREGATION_GLOBAL_PREFIX = 'variant-global-';
+
+    /**
      * Specification:
-     * - Builds the P0-proven "unselected facet" shape: `nested(variant-facet) > filter(other selected
+     * - Builds the "unselected facet" shape: `nested(variant-facet) > filter(other selected
      *   variant facets, if any) > terms(vals.<facetName>.keyword) > reverse_nested()`.
      * - Counts are ROOT DOCS (abstracts), via `reverse_nested` — so they never sum to the total hit
      *   count, since one abstract can carry more than one facet value across its concretes.
      * - Scoped by whatever the outer query already filtered to (base query + non-variant facet
-     *   filters + the P3 combined-variant filter) — this aggregation does not need to redeclare those,
-     *   only the per-concrete "other selected variant facets" constraint, which a nested aggregation does
-     *   NOT inherit automatically from the outer query.
+     *   filters + the single combined nested filter `VariantFacetQueryBuilder` adds for all currently
+     *   selected variant-scoped facets) — this aggregation does not need to redeclare those, only the
+     *   per-concrete "other selected variant facets" constraint, which a nested aggregation does NOT
+     *   inherit automatically from the outer query.
      *
      * @param string $facetName
      * @param array<string, array{scope: string, value: mixed}> $otherSelectedVariantSelections Currently
@@ -33,7 +44,7 @@ interface VariantFacetAggregationBuilderInterface
 
     /**
      * Specification:
-     * - Builds the P0-proven "selected facet" shape: `global > filter(base query clone + other selected
+     * - Builds the "selected facet" shape: `global > filter(base query clone + other selected
      *   non-variant facet filters + other selected variant facets as one combined nested filter) >
      *   nested(variant-facet) > filter(other selected variant facets) > terms(vals.<facetName>.keyword) >
      *   reverse_nested()`.
@@ -84,4 +95,35 @@ interface VariantFacetAggregationBuilderInterface
         array $otherNonVariantFacetFilters,
         array $otherSelectedVariantSelections,
     ): AbstractAggregation;
+
+    /**
+     * The five `get*AggregationName()` methods below are the other half of the builder/extractor
+     * contract alongside {@see AGGREGATION_GLOBAL_PREFIX}: `VariantFacetExtractor`/`VariantRangeExtractor`
+     * call these with the SAME facet name to reconstruct the exact keys the aggregations above were built
+     * under, so they can navigate back into the raw ES response and find the right nested/filter/terms
+     * result. Real, load-bearing dependencies, not implementation detail — hence declared here.
+     *
+     * @param string $facetName
+     */
+    public function getNestedAggregationName(string $facetName): string;
+
+    /**
+     * @param string $facetName
+     */
+    public function getInnerFilterAggregationName(string $facetName): string;
+
+    /**
+     * @param string $facetName
+     */
+    public function getRootFilterAggregationName(string $facetName): string;
+
+    /**
+     * @param string $facetName
+     */
+    public function getValuesAggregationName(string $facetName): string;
+
+    /**
+     * @param string $facetName
+     */
+    public function getRootAggregationName(string $facetName): string;
 }

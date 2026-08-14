@@ -19,6 +19,7 @@ use Spryker\Client\SearchElasticsearch\SearchElasticsearchConfig;
 use Spryker\Client\Store\StoreClientInterface;
 use Spryker\Shared\SearchElasticsearch\ElasticaClient\ElasticaClientFactory;
 use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilder;
+use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilderInterface;
 use SprykerCommunity\Client\VariantFacets\AggregationExtractor\VariantFacetExtractor;
 use SprykerCommunity\Client\VariantFacets\AggregationExtractor\VariantFacetExtractorInterface;
 use SprykerCommunity\Client\VariantFacets\AggregationExtractor\VariantRangeExtractor;
@@ -56,7 +57,7 @@ class VariantFacetsFactory extends AbstractFactory
         return new VariantFacetQueryBuilder($this->getConfig());
     }
 
-    public function createVariantFacetAggregationBuilder(): VariantFacetAggregationBuilder
+    public function createVariantFacetAggregationBuilder(): VariantFacetAggregationBuilderInterface
     {
         return new VariantFacetAggregationBuilder(
             $this->createVariantFacetQueryBuilder(),
