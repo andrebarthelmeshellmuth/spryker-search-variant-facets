@@ -1,0 +1,24 @@
+{
+    "mappings": {
+        "page": {
+            "properties": {
+                "variant-facet": {
+                    "type": "nested",
+                    "properties": {
+                        "sku": {
+                            "type": "keyword"
+                        },
+                        "vals": {
+                            "type": "object",
+                            "dynamic": true
+                        },
+                        "nums": {
+                            "type": "object",
+                            "dynamic": true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

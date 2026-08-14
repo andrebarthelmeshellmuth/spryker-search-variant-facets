@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * This file is part of the spryker-community/search-variant-facets package.
+ * For full license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types = 1);
+
+namespace SprykerCommunity\Zed\VariantFacets;
+
+use Spryker\Zed\Kernel\AbstractBundleConfig;
+
+class VariantFacetsConfig extends AbstractBundleConfig
+{
+}
