@@ -13,16 +13,11 @@ use Generated\Shared\Transfer\FacetSearchResultTransfer;
 use Generated\Shared\Transfer\RangeSearchResultTransfer;
 
 /**
- * Ported from Produktkonfigurator's `FacetResultFormatterPlugin::isFacetUseful()`/
- * `isSingleFacetUseful()`, simplified: the original's `count($values) > 2 &&
- * !hasFacetValuesSameHitsAsResult(...)` branch is subsumed by its own `facetReducesResultSet(...)`
- * branch — a facet value's docCount can never exceed `$resultTotalHits` (it's a subset of the current
- * result), so "not all values equal the total" and "at least one value reduces the set" are the same
- * condition; the `>2` branch never fires without the other also firing. Ported as the two conditions
- * actually do — active-value-always-kept, plus the single reduces-the-set check — not the redundant one.
- * Produktkonfigurator's grouped min/max range-facet-pair handling (`isMultiPartFacetUseful()`,
- * `getGroupedFacetData()`) isn't ported at all: this package's own range facets are single, ungrouped
- * `RangeSearchResultTransfer`s (see `VariantRangeExtractor`), so that machinery doesn't apply here.
+ * `isBucketedFacetUseful()` relies on every value's `docCount` being >= 1: `VariantFacetExtractor::
+ * extractValues()` explicitly skips any aggregation bucket with a zero `doc_count` before a
+ * `FacetSearchResultValueTransfer` is ever built for it, so a phantom zero-count value (which would
+ * trivially satisfy `docCount < $resultTotalHits` and wrongly mark the facet "useful") can never reach
+ * this class.
  */
 class VariantFacetUsefulnessFilter implements VariantFacetUsefulnessFilterInterface
 {

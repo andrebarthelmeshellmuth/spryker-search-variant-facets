@@ -27,11 +27,6 @@ class VariantFacetAggregationBuilder implements VariantFacetAggregationBuilderIn
      */
     public const PATH_VARIANT_FACET = 'variant-facet';
 
-    /**
-     * @var string
-     */
-    public const AGGREGATION_GLOBAL_PREFIX = 'variant-global-';
-
     public function __construct(
         protected VariantFacetQueryBuilderInterface $variantFacetQueryBuilder,
         protected int $facetValueAggregationSize,

@@ -11,11 +11,11 @@ namespace SprykerCommunity\Client\VariantFacets\AggregationExtractor;
 
 use Generated\Shared\Transfer\FacetConfigTransfer;
 use Generated\Shared\Transfer\RangeSearchResultTransfer;
-use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilder;
+use SprykerCommunity\Client\VariantFacets\Aggregation\VariantFacetAggregationBuilderInterface;
 
 class VariantRangeExtractor implements VariantRangeExtractorInterface
 {
-    public function __construct(protected VariantFacetAggregationBuilder $aggregationBuilder)
+    public function __construct(protected VariantFacetAggregationBuilderInterface $aggregationBuilder)
     {
     }
 
@@ -80,7 +80,7 @@ class VariantRangeExtractor implements VariantRangeExtractorInterface
             return $aggregations[$nestedName] ?? null;
         }
 
-        $globalName = VariantFacetAggregationBuilder::AGGREGATION_GLOBAL_PREFIX . $facetName;
+        $globalName = VariantFacetAggregationBuilderInterface::AGGREGATION_GLOBAL_PREFIX . $facetName;
         $rootFilterName = $this->aggregationBuilder->getRootFilterAggregationName($facetName);
 
         return $aggregations[$globalName][$rootFilterName][$nestedName] ?? null;

@@ -38,10 +38,10 @@ and untouched by this package).
 
 ## Status
 
-v1: cross-facet AND filtering, precise facet counts, and range facets are built and verified live against
-a real OpenSearch 1.3 instance. `inner_hits`-based storefront tile-swap is built and verified live but
-off by default. 68 tests (55 Client, 8 Zed, 5 Presentation), phpcs, phpmd, rector, and phpstan level 8
-clean. Not yet tagged/released.
+Feature-complete: cross-facet AND filtering, precise per-concrete facet counts, and range facets are
+built and verified live against a real OpenSearch 1.3 instance. `inner_hits`-based storefront tile-swap
+is built and verified live too, off by default. 68 tests (55 Client, 8 Zed, 5 Presentation), phpcs,
+phpmd, rector, and phpstan level 8 clean.
 
 ## Root cause
 
@@ -67,9 +67,24 @@ core"](#porting-this-fix-into-spryker-core) for how to read this as a defect rep
 
 ### 1. Install the package
 
-```bash
-composer require spryker-community/search-variant-facets
+Not published on Packagist under the `spryker-community` vendor namespace — install from a VCS
+repository instead:
+
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets"
+    }
+]
 ```
+
+```bash
+composer require spryker-community/search-variant-facets:dev-main
+```
+
+Not yet tagged, hence `dev-main` rather than a semver constraint — once a release exists, prefer pinning
+to it (e.g. `^1.0`) instead.
 
 ### 2. Generate transfers
 
@@ -91,6 +106,17 @@ The package's `Shared/VariantFacets/Schema/page.json` fragment is picked up auto
 family uses — no manual schema registration needed. This adds a `variant-facet` nested field to your page
 index; it does **not** touch or remove core's existing `string-facet`/`integer-facet` fields, which stay
 exactly as they are (see ["How it works"](#how-it-works) for why that matters for rollback).
+
+**No new index, no downtime.** Since your `page` index already exists, `console search:setup` runs core's
+`IndexUpdater` (`Spryker\Zed\SearchElasticsearch\...\Installer\Index\Update\IndexUpdater`), which sends a
+live `PUT _mapping` against the existing index — not a create-and-swap. Elasticsearch allows adding a
+genuinely new field to a live mapping with zero downtime; it only rejects (or would need a real reindex
+behind an alias) for RETYPING a field that already exists, which this package deliberately never does.
+Worth knowing explicitly: Spryker core ships **no alias/blue-green reindex mechanism** in this installer
+at all — `IndexInstaller` only ever runs against a brand-new index, `IndexUpdater` only ever sends
+additive mapping updates to an existing one. That's exactly why "never touch an existing field" is a hard
+design constraint here, not just a nicety: core gives you no safe way to migrate a breaking mapping
+change without real downtime, so this package is built to never need one.
 
 ### 4. Register the Zed plugins
 
@@ -253,11 +279,10 @@ consumed — a plain project-level Twig read, e.g.:
 
 ## Facet usefulness filtering (optional)
 
-Off by default. `Produktkonfigurator` (a real client project this author has worked on) hides a facet, or
-a facet value, once it can no longer narrow the current result set — e.g. a value where every remaining
-product already has it. Under core's OR-across-concretes counts that was only ever an approximation;
-under this package's exact per-concrete counts it's now a precise statement, which is what makes the
-feature worth offering here rather than leaving it as a Produktkonfigurator-specific opinion.
+Off by default. This feature hides a facet, or a facet value, once it can no longer narrow the current
+result set — e.g. a value where every remaining product already has it. Under core's OR-across-concretes
+counts that was only ever an approximation; under this package's exact per-concrete counts it's now a
+precise statement, which is what makes the feature worth offering here as a general-purpose option.
 
 Enable via `Pyz\Client\VariantFacets\VariantFacetsConfig::isUselessFacetFilteringEnabled()`. The rule,
 applied only to variant-scoped facets (everything else is untouched, exactly as with the rest of this
@@ -275,12 +300,8 @@ every attribute value regardless of whether it currently narrows anything. Verif
 search down to a single matching concrete via one facet correctly collapses and hides an unrelated,
 no-longer-discriminating facet entirely, while a facet with an active selection always stays visible.
 
-Ported from Produktkonfigurator's `FacetResultFormatterPlugin::isFacetUseful()`/`isSingleFacetUseful()`,
-simplified: the original's `count($values) > 2 && !allValuesEqualTheTotal` branch is subsumed by its own
-"at least one value reduces the set" branch (a value's count can never exceed the total, so those two
-conditions are logically the same once you drop the `>2` gate) — ported as the two conditions actually
-do, not the redundant three-way OR. Produktkonfigurator's grouped min/max range-facet-pair machinery
-wasn't ported — this package's range facets are single, ungrouped, so it doesn't apply.
+Grouped min/max range-facet-pair handling is not implemented — this package's range facets are single,
+ungrouped, so it doesn't apply.
 
 ## Multi-valued attributes
 
@@ -306,6 +327,18 @@ skipped rather than guessed at.
   dynamically-typed sub-fields per facet key rather than one static field per facet name — for catalogs
   with very large numbers of concretes per abstract or very many variant-scoped facet keys, measure before
   adopting at scale.
+- **Assumes one document per abstract, full stop.** Every concrete is represented purely as a nested
+  entry inside its abstract's own document (`variant-facet`) — this package has no notion of a concrete
+  ALSO existing as its own separate, top-level, independently-searchable document in the same index (an
+  index shape some shops build so a search can directly return/switch to an individual orderable
+  variant, not just narrow which abstract's tile is shown). In that kind of setup, `resultTotalHits`
+  (used throughout ["Facet usefulness filtering"](#facet-usefulness-filtering-optional)) is ambiguous —
+  it can't mean one thing across two differently-shaped document types sharing a result set — and the
+  nested-tuple aggregation machinery in ["How it works"](#how-it-works) simply doesn't apply to a
+  concrete-type document that already carries its own flat, un-nested facet values. Supporting that would
+  need its own design (likely: usefulness filtering and the aggregation builder both becoming aware of
+  which document-type mode a given search is running in), not a small change to this package as it
+  stands.
 
 ## Porting this fix into Spryker core
 

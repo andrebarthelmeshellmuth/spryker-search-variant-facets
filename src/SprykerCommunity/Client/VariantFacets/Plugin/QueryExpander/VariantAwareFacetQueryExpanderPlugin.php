@@ -22,13 +22,12 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsFactory;
 
 /**
  * Drop-in replacement for core's `FacetQueryExpanderPlugin` — register it in the SAME position instead
- * (see `[[search-variant-facets-plan]]` decision 2: replaces, doesn't add, so uninstalling this package
- * is a one-line plugin swap with no republish needed).
+ * of alongside it, so uninstalling this package is a one-line plugin swap with no republish needed.
  *
  * The FILTER-application step combines variant-scoped facet selections into ONE shared `nested` query (so
  * a single concrete must satisfy every selected variant-scoped facet at once), instead of core's default
  * of one independent `nested` query per facet (any concrete may satisfy each facet, possibly a different
- * one per facet — the bug this package exists to fix). The AGGREGATION step builds the P0-proven
+ * one per facet — the bug this package exists to fix). The AGGREGATION step builds the
  * unselected/selected shapes (`VariantFacetAggregationBuilder`) for variant-scoped facets instead of
  * core's per-facet-independent counts, which `VariantAwareFacetResultFormatterPlugin` then reads back.
  *
@@ -98,7 +97,7 @@ class VariantAwareFacetQueryExpanderPlugin extends FacetQueryExpanderPlugin
     /**
      * Replaces `addFacetAggregationToQuery()`: non-variant-scoped facets get exactly core's own
      * per-facet-independent aggregation, unchanged; variant-scoped facets (both 'vals' terms-count and
-     * 'nums' range-stats shapes) get the P0-proven unselected/selected aggregations instead.
+     * 'nums' range-stats shapes) get the unselected/selected aggregations instead.
      *
      * @param \Elastica\Query $query
      * @param \Spryker\Client\SearchElasticsearch\Config\FacetConfigInterface $facetConfig
