@@ -105,8 +105,12 @@ core"](#porting-this-fix-into-spryker-core) for how to read this as a defect rep
 > ```
 >
 > `"type":"nested"` is correct. If `variant-facet` appears without a `"type"` (an implicit `object`), that
-> index has been poisoned and needs to be recreated — drop it, run `console search:setup` to build it with
-> the correct mapping, then re-run the export.
+> index has been poisoned and needs to be recreated. The safe way to do that with zero downtime is
+> `spryker-community/search-index-alias`: once your `page` index is adopted behind an alias,
+> `search-index-alias:rebuild` builds a fresh index with the corrected mapping in the background (catching
+> up anything published while it builds), and `search-index-alias:flip` switches traffic over atomically —
+> search stays up the whole time. Without it, the only remedy is dropping the live index and recreating it
+> with `console search:setup`, which is real downtime for however long the re-export takes.
 
 ### 1. Install the package
 
@@ -191,9 +195,13 @@ behaviour. Single-facet filtering is unaffected throughout. Results self-heal pr
 export catches up: no errors, no downtime, just a temporarily incomplete result set for combined-facet
 queries until the export finishes catalog-wide.
 
-We plan to close this small gap with a separate, upcoming package built around aliased search indices —
-the reindex-then-atomic-alias-swap mechanism core doesn't ship (see above) — so even that export-lag
-window goes away for shops that need it.
+If even that export-lag window is unacceptable (e.g. a large catalog where the export takes a while),
+`spryker-community/search-index-alias` closes it: adopt your `page` index behind an alias, then use its
+`rebuild` (background build + bulk-load directly from the export tables, converging via a mirror queue)
+and `flip` (atomic alias swap) instead of running `console search:setup` in place. The new index only
+goes live once every product already carries
+`variant-facet` — no partial-facet window at all, at the cost of one extra install step. Composer
+`suggest`s it for exactly this reason; it's optional, this package works standalone without it.
 
 ### 5. Register the Zed plugins
 
