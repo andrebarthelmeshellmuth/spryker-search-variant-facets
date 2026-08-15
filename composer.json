@@ -36,6 +36,9 @@
         "spryker/code-sniffer": "0.17.35",
         "squizlabs/php_codesniffer": "3.13.6"
     },
+    "suggest": {
+        "spryker-community/search-index-alias": "Zero-downtime blue/green reindex for your page index (alias + rebuild + atomic flip) -- lets you deploy this package's initial nested-mapping change, and recover from the poisoned-mapping scenario documented in the README's Installation section, without the brief export-lag window or the drop-and-recreate downtime a bare `console search:setup` implies."
+    },
     "scripts": {
         "check-floors": [
             "@composer update --prefer-lowest --prefer-stable --no-dev --no-interaction",
