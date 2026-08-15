@@ -80,6 +80,34 @@ core"](#porting-this-fix-into-spryker-core) for how to read this as a defect rep
 
 ## Installation
 
+> **Run these steps in order. Step 3 before step 4 is not a style preference — it is load-bearing.**
+>
+> If a product document carrying `variant-facet` reaches your `page` index *before* step 3 has added the
+> mapping for it, Elasticsearch/OpenSearch will not reject the document. Spryker's page mapping sets no
+> `dynamic` value, so it defaults to `true`, and the field is silently auto-mapped as a plain **`object`**
+> (with `sku` as `text`, not `keyword`). Everything continues to look healthy: writes succeed, searches
+> work, nothing is logged.
+>
+> The damage surfaces later. `console search:setup` then fails permanently with:
+>
+> ```
+> illegal_argument_exception: cannot change object mapping from non-nested to nested
+> ```
+>
+> `object` → `nested` is a retype, and retyping is the one mapping change that cannot be applied to a live
+> index (see step 3). At that point the only remedy is rebuilding the index — the exact downtime this
+> package is otherwise careful to avoid. Verified against OpenSearch 1.3.
+>
+> **Check whether an index is already affected:**
+>
+> ```bash
+> curl -s "$SEARCH_HOST/<your_page_index>/_mapping" | grep -o '"variant-facet":{"type":"[a-z]*"'
+> ```
+>
+> `"type":"nested"` is correct. If `variant-facet` appears without a `"type"` (an implicit `object`), that
+> index has been poisoned and needs to be recreated — drop it, run `console search:setup` to build it with
+> the correct mapping, then re-run the export.
+
 ### 1. Install the package
 
 Not yet published on Packagist under the `spryker-community` vendor namespace. That namespace and its
@@ -130,6 +158,9 @@ This adds `PageIndexMap::VARIANT_FACET` and the `variantFacet`/`variantAttribute
 
 ### 4. Regenerate the search index mapping
 
+**Do this before step 4, and before anything triggers a product republish.** See the ordering warning at
+the top of this section for what happens otherwise, and how to detect it.
+
 ```bash
 console search:setup
 ```
@@ -165,6 +196,9 @@ the reindex-then-atomic-alias-swap mechanism core doesn't ship (see above) — s
 window goes away for shops that need it.
 
 ### 5. Register the Zed plugins
+
+These are what start writing `variant-facet` into product documents, so **step 3 must have completed
+successfully first** — confirm your page index reports `"type":"nested"` before registering them.
 
 In your project's `ProductPageSearchDependencyProvider`:
 
