@@ -151,6 +151,19 @@ additive mapping updates to an existing one. That's exactly why "never touch an 
 design constraint here, not just a nicety: core gives you no safe way to migrate a breaking mapping
 change without real downtime, so this package is built to never need one.
 
+**But there's a brief export-lag window, not an instant cutover.** The mapping update is immediate; what
+takes time is the normal product export populating `variant-facet` on every product's document. Deploying
+ahead of that export finishing is safe — until a given product is re-exported, its document simply has no
+`variant-facet` field yet, so a combined Color+Size (or equivalent) filter finds no nested match for it
+and it silently drops out of those results, rather than reverting to the old, buggy over-matching
+behaviour. Single-facet filtering is unaffected throughout. Results self-heal product by product as the
+export catches up: no errors, no downtime, just a temporarily incomplete result set for combined-facet
+queries until the export finishes catalog-wide.
+
+We plan to close this small gap with a separate, upcoming package built around aliased search indices —
+the reindex-then-atomic-alias-swap mechanism core doesn't ship (see above) — so even that export-lag
+window goes away for shops that need it.
+
 ### 5. Register the Zed plugins
 
 In your project's `ProductPageSearchDependencyProvider`:
