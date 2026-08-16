@@ -28,6 +28,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsConfig;
  * @group AggregationExtractor
  * @group VariantRangeExtractorTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class VariantRangeExtractorTest extends Unit
 {

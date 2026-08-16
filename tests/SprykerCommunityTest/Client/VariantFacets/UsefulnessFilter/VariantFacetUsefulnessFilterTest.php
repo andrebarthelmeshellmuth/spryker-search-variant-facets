@@ -25,6 +25,7 @@ use SprykerCommunity\Client\VariantFacets\UsefulnessFilter\VariantFacetUsefulnes
  * @group UsefulnessFilter
  * @group VariantFacetUsefulnessFilterTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class VariantFacetUsefulnessFilterTest extends Unit
 {

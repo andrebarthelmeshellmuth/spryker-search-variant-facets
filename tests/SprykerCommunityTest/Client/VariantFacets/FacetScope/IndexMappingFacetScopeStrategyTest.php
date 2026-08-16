@@ -22,6 +22,7 @@ use SprykerCommunity\Client\VariantFacets\Schema\IndexMappingReaderInterface;
  * @group FacetScope
  * @group IndexMappingFacetScopeStrategyTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class IndexMappingFacetScopeStrategyTest extends Unit
 {
