@@ -44,10 +44,12 @@
         "phpstan": "phpstan analyse -c phpstan.neon src/",
         "phpstan-ci": [
             "php tests/_ci-standalone/generate-transfers.php",
+            "php tests/_ci-standalone/generate-index-map.php",
             "phpstan analyse -c phpstan.ci.neon src/"
         ],
         "test-portable": [
             "php tests/_ci-standalone/generate-transfers.php",
+            "php tests/_ci-standalone/generate-index-map.php",
             "codecept run -c tests/codeception.portable.yml -g Portable"
         ]
     },
@@ -56,7 +58,7 @@
         "rector": "Applies Rector's configured rule sets (PHP floor upgrades + level-0 dead-code/code-quality) to src/, tests/, and tools/.",
         "rector-dry-run": "Shows what Rector would change without writing anything.",
         "phpstan": "Static analysis at level 8. Must be run from a host shop (see README) — needs the shop's generated Generated\\Shared\\Transfer\\* classes and a freshly regenerated Ide/AutoCompletion stub, neither of which this package can produce standalone.",
-        "phpstan-ci": "Standalone CI variant of the phpstan check: generates just the Transfer classes this package needs (same generator the Portable test suite uses) and ignores the two categories of class that only exist inside a real host shop (Propel Orm\\Zed\\* models, the aggregated Ide\\AutoCompletion stub) — see phpstan.ci.neon for exactly what's excluded and why.",
+        "phpstan-ci": "Standalone CI variant of the phpstan check: generates just the Transfer and PageIndexMap classes this package needs (same generators the Portable test suite uses) and ignores the two categories of class that only exist inside a real host shop (Propel Orm\\Zed\\* models, the aggregated Ide\\AutoCompletion stub) — see phpstan.ci.neon for exactly what's excluded and why.",
         "test-portable": "Runs this package's own @group Portable Codeception tests standalone — no demoshop, no live database, no search engine."
     },
     "autoload": {
@@ -67,10 +69,7 @@
     "autoload-dev": {
         "psr-4": {
             "SprykerCommunityTest\\": "tests/SprykerCommunityTest/",
-            "Generated\\": [
-                "src/Generated/",
-                "tests/_ci-standalone/Generated/"
-            ]
+            "Generated\\": "src/Generated/"
         }
     },
     "config": {

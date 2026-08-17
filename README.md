@@ -394,15 +394,16 @@ actually needs:
 
 `Portable` tests run standalone in CI on every push, via `tests/codeception.portable.yml` +
 `tests/_ci-standalone/` — no host shop, no live database, no search engine. The recipe: a direct
-`TransferBusinessFactory` call generates `Generated\Shared\Transfer\*` into `src/Generated/` (gitignored,
-regenerated every run), and `tests/_ci-standalone/Generated/Shared/Search/PageIndexMap.php` is a
-checked-in, point-in-time snapshot of the one generated artifact this package cannot produce alone (its
-content is a project-wide aggregate across every installed sibling package — see that file's own
-docblock). Run it yourself the same way CI does:
+`TransferBusinessFactory` call generates `Generated\Shared\Transfer\*`, and a direct
+`spryker/search-elasticsearch` `IndexMapGenerator` call generates `Generated\Shared\Search\PageIndexMap`
+(merging that package's own default `page` mapping with this package's own `Schema/page.json` addition,
+i.e. `variant-facet`) — both into `src/Generated/` (gitignored, regenerated every run, never committed).
+Run it yourself the same way CI does:
 
 ```bash
 composer install
 php tests/_ci-standalone/generate-transfers.php
+php tests/_ci-standalone/generate-index-map.php
 vendor/bin/codecept run -c tests/codeception.portable.yml -g Portable
 ```
 
