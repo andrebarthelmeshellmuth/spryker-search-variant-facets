@@ -79,10 +79,15 @@
         }
     },
     "minimum-stability": "stable",
+    "homepage": "https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets",
     "authors": [
         {
             "name": "Andre Barthelmes",
             "role": "Developer"
         }
-    ]
+    ],
+    "support": {
+        "issues": "https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets/issues",
+        "source": "https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets"
+    }
 }
