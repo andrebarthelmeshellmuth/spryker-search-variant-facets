@@ -5,6 +5,14 @@ on:
     branches: [main]
   pull_request:
 
+# Authenticates composer's GitHub dist/API calls with the workflow's own GITHUB_TOKEN -- unauthenticated
+# codeload.github.com downloads share a low, IP-wide rate limit that a normal composer install (dozens of
+# packages) can exhaust on its own, surfacing as "could not be downloaded (HTTP/2 429)" partway through.
+# Authenticated requests get a much higher ceiling. GITHUB_TOKEN is always available in Actions, no secret
+# to configure.
+env:
+  COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.GITHUB_TOKEN }}"}}'
+
 jobs:
   validate:
     name: composer validate
@@ -74,6 +82,52 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
       - run: composer check-floors
+
+  phpstan-ci:
+    # Standalone CI variant (`composer phpstan-ci`, see phpstan.ci.neon) — generates just the Transfer
+    # classes this package needs (same generator the portable-tests job below uses) and ignores the two
+    # categories of class that only exist inside a real host shop (Propel Orm\Zed\* models, the
+    # aggregated Ide\AutoCompletion stub). The full host-shop-aware `composer phpstan` check still runs
+    # from the host-shop job below — see README, "Testing and CI".
+    name: phpstan (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: composer phpstan-ci
+
+  portable-tests:
+    # Runs this package's own `@group Portable` tests, standalone — no demoshop, no live database, no
+    # Elasticsearch. `Generated\Shared\Transfer\*` is produced here via a direct TransferBusinessFactory
+    # call (tests/_ci-standalone/generate-transfers.php), and `Generated\Shared\Search\PageIndexMap` via a
+    # direct spryker/search-elasticsearch IndexMapGenerator call (tests/_ci-standalone/generate-index-map.php)
+    # — both bypass the full Zed Console/Kernel bootstrap. The rest of this package's Client/Zed suites
+    # (including a re-run of these same Portable classes, in their real host-shop context) stay covered by
+    # the host-shop job below, not excluded here.
+    name: portable tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: php tests/_ci-standalone/generate-transfers.php
+      - run: php tests/_ci-standalone/generate-index-map.php
+      - run: vendor/bin/codecept run -c tests/codeception.portable.yml -g Portable
 
   complexity:
     # Two SEPARATE phpmd runs, not one combined ruleset: PHPMD merges every loaded ruleset's

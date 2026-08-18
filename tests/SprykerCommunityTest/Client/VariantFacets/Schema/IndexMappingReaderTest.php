@@ -26,6 +26,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsConfig;
  * @group Schema
  * @group IndexMappingReaderTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class IndexMappingReaderTest extends Unit
 {

@@ -384,31 +384,60 @@ collision.
 
 ## Testing and CI
 
+Every test class carries a portability `@group`, so `codecept run -g <tag>` tells you what a given test
+actually needs:
+
+| tag | needs | where it runs |
+|---|---|---|
+| `Portable` | nothing beyond `Generated\Shared\Transfer\*` | standalone — CI runs exactly this, see below |
+| (untagged) | a real host shop (Locator, DB, and/or Elasticsearch/OpenSearch) | host-shop CI job only |
+
+`Portable` tests run standalone in CI on every push, via `tests/codeception.portable.yml` +
+`tests/_ci-standalone/` — no host shop, no live database, no search engine. The recipe: a direct
+`TransferBusinessFactory` call generates `Generated\Shared\Transfer\*`, and a direct
+`spryker/search-elasticsearch` `IndexMapGenerator` call generates `Generated\Shared\Search\PageIndexMap`
+(merging that package's own default `page` mapping with this package's own `Schema/page.json` addition,
+i.e. `variant-facet`) — both into `src/Generated/` (gitignored, regenerated every run, never committed).
+Run it yourself the same way CI does:
+
+```bash
+composer install
+php tests/_ci-standalone/generate-transfers.php
+php tests/_ci-standalone/generate-index-map.php
+vendor/bin/codecept run -c tests/codeception.portable.yml -g Portable
+```
+
 ```bash
 composer check-floors   # verifies declared dependency floors are real, not guessed
 composer phpstan        # level 8, must be run from a host shop (needs Generated\Shared\Transfer\*)
+composer phpstan-ci     # standalone CI variant, see phpstan.ci.neon
 composer rector-dry-run
 vendor/bin/codecept run -c tests/SprykerCommunityTest/Client/VariantFacets/codeception.yml
 vendor/bin/codecept run -c tests/SprykerCommunityTest/Zed/VariantFacets/codeception.yml
 vendor/bin/codecept run -c tests/SprykerCommunityTest/Yves/VariantFacetsPresentation/codeception.yml
 ```
 
-`phpstan`/`codecept` both need to run from inside a host Spryker shop (they use the shop's generated
-Locator and `Generated\Shared\Transfer\*` classes) — `composer check-floors` is the one command that
-works from a clean checkout of this package alone. The Presentation suite additionally needs a real
-WebDriver browser session (`docker/sdk testing`, not plain `docker/sdk cli` — the latter doesn't inject
-`SPRYKER_TEST_WEB_DRIVER_HOST`) and this package's own fixture applied (see "Demo fixture" above) — it drives the real storefront search page end to end and asserts the exact result counts
-the fixture implies, closing the gap an earlier version of this README used to flag ("a full CSV-fixture
-E2E wasn't possible") for both the cross-facet-AND case and range facets.
+The full `phpstan`/`codecept` commands above still need to run from inside a host Spryker shop (they use
+the shop's generated Locator and `Generated\Shared\Transfer\*` classes) — `composer check-floors` and the
+`Portable` subset above are the two things that work from a clean checkout of this package alone. The
+Presentation suite additionally needs a real WebDriver browser session (`docker/sdk testing`, not plain
+`docker/sdk cli` — the latter doesn't inject `SPRYKER_TEST_WEB_DRIVER_HOST`) and this package's own
+fixture applied (see "Demo fixture" above) — it drives the real storefront search page end to end and
+asserts the exact result counts the fixture implies, closing the gap an earlier version of this README
+used to flag ("a full CSV-fixture E2E wasn't possible") for both the cross-facet-AND case and range
+facets.
 
 CI's `host-shop` job automates the "host Spryker shop" requirement above for `phpstan` and the Client/Zed
 Codeception suites: it checks out the public `spryker-shop/b2b-demo-marketplace`, wires this package in as
 a path repository (the same shape the Installation section above documents), runs
 `console transfer:generate` + `console dev:ide-auto-completion:generate` (both pure codegen — no
-DB/Redis/Elasticsearch needed), then runs phpstan and the two suites against it. The WebDriver
-Presentation suite is deliberately NOT run in CI — it needs a live OpenSearch-backed catalog with this
-package's own fixture applied plus a real browser session, which needs the full docker-compose stack this
-repo's plain GitHub Actions runner doesn't have; it stays a local/manual gate.
+DB/Redis/Elasticsearch needed), then runs phpstan and the two suites against it — including a second,
+real-host-shop run of the same `Portable`-tagged classes the lighter `portable-tests` job above already
+covers standalone; that overlap is intentional; it is the broader, slower check, not a replacement for the
+fast one. The WebDriver Presentation suite is deliberately NOT run in CI — it needs a live
+OpenSearch-backed catalog with this package's own fixture applied plus a real browser session, which needs
+the full docker-compose stack this repo's plain GitHub Actions runner doesn't have; it stays a local/manual
+gate.
 
 ## License
 

@@ -25,6 +25,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsConfig;
  * @group Aggregation
  * @group VariantFacetAggregationBuilderTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class VariantFacetAggregationBuilderTest extends Unit
 {
