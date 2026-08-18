@@ -22,6 +22,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsConfig;
  * @group Query
  * @group VariantFacetQueryBuilderTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class VariantFacetQueryBuilderTest extends Unit
 {

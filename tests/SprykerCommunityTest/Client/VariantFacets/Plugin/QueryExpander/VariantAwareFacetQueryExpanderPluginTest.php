@@ -30,6 +30,7 @@ use SprykerCommunity\Client\VariantFacets\Plugin\QueryExpander\VariantAwareFacet
  * @group QueryExpander
  * @group VariantAwareFacetQueryExpanderPluginTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class VariantAwareFacetQueryExpanderPluginTest extends Unit
 {

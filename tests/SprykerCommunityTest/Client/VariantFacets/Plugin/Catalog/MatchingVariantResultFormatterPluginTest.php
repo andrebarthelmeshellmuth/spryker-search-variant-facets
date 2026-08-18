@@ -27,6 +27,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsFactory;
  * @group Catalog
  * @group MatchingVariantResultFormatterPluginTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class MatchingVariantResultFormatterPluginTest extends Unit
 {

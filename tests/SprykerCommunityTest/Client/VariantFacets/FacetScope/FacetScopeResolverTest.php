@@ -24,6 +24,7 @@ use SprykerCommunity\Client\VariantFacets\VariantFacetsConfig;
  * @group FacetScope
  * @group FacetScopeResolverTest
  * Add your own group annotations below this line
+ * @group Portable
  */
 class FacetScopeResolverTest extends Unit
 {
