@@ -1,5 +1,10 @@
 # Spryker Variant Facets
 
+[![CI](https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets/actions/workflows/ci.yml)
+[![PHP](https://img.shields.io/badge/php-%E2%89%A5%208.3-777bb4)](composer.json)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-2a6b2a)](phpstan.neon)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 Cross-facet AND for product variants: fixes a long-standing Spryker core behaviour where selecting values
 from *different* facets (e.g. `color=red`, `size=40`) matches an abstract product even when red and 40
 come from two different concretes, not one that's actually red **and** 40 at once.
