@@ -48,6 +48,8 @@ This package fixes that for any facet backed by `spy_product_search_attribute` w
 **concrete** level (not the abstract level — a facet like `brand`, set once per abstract, is unaffected
 and untouched by this package).
 
+![The storefront facet sidebar after selecting Color: schwarz AND Material: Leder together on a Feldwerk chair whose 3 concretes are anthrazit+Stoff, anthrazit+Leder, and schwarz+Stoff — deliberately missing schwarz+Leder — correctly returns 0 Items found instead of stock Spryker's OR-across-concretes false positive](docs/screenshots/cross-facet-and.png)
+
 ## Status
 
 Feature-complete: cross-facet AND filtering, precise per-concrete facet counts, and range facets are
@@ -291,6 +293,8 @@ a brand-new attribute key must be registered via the `product-attribute-key` imp
 DataImport\Business\Model\ProductAttributeKey\AddProductAttributeKeysStep`) before `product-search-
 attribute` can reference it — not just added to `product_search_attribute.csv` directly.
 
+![The Lead Time (days) range facet, expanded, showing "Range of 14 to 28" — the true min/max across a Feldwerk product's 3 concretes (14/21/28 days), not a guessed or hardcoded bound](docs/screenshots/range-facet.png)
+
 ## Storefront tile-swap (optional)
 
 Off by default. When `isMatchingVariantTileSwapEnabled()` is `true`, the combined facet query requests
@@ -391,6 +395,14 @@ matrix, needed to prove the cross-facet-AND bug and its fix), and `HP-ECO-45K` g
 range facet. None of this is committed to the demoshop itself — it's Spryker's official upstream, not a
 fork this project owns (see "Testing and CI" below for the same reasoning applied to code).
 
+This README's own screenshots (see ["What does this do?"](#what-does-this-do) and ["Range
+facets"](#range-facets)) use a SECOND, smaller fixture on top of the same script: 2 new concretes each on
+two already-fictional "Feldwerk" demo-catalog chairs (shared with the sibling
+search-debug/search-feedback/search-ranking/search-ranking-optimizer/search-analyzer-config packages) —
+this demoshop's real product images/descriptions aren't covered under redistribution rights, so the
+screenshots avoid depending on them. Reuses the demoshop's already-registered `farbe`/`material` facets
+rather than staking a new claim for them.
+
 ```bash
 php fixtures/apply.php /path/to/b2b-demo-marketplace
 ```
@@ -402,9 +414,19 @@ working even if the demoshop's own fixture data shifts around it. Then, from the
 ./docker/sdk console data:import product-attribute-key   # MUST run before product-search-attribute
 ./docker/sdk console data:import product-search-attribute
 ./docker/sdk console data:import product-concrete
-./docker/sdk console publish:trigger-events -r product_abstract -i <STL-7010's and HP-ECO-45K's id_product_abstract>
+./docker/sdk console data:import product-stock
+./docker/sdk console publish:trigger-events -r product_abstract -i <id_product_abstract of STL-7010, HP-ECO-45K, DEMO-CHR-001 and DEMO-CHR-002>
 ./docker/sdk console queue:worker:start --stop-when-empty
 ```
+
+**If your project manages its `page` index via `spryker-community/search-index-alias`** (blue-green
+aliasing, no concrete-named index for core's own `search:setup` to recognize): plain `console search:setup`
+fails there with `Can not determine state for index "..."` the moment it reaches an alias-managed index,
+so this package's `variant-facet` mapping addition never reaches a live alias-managed index that way. Since
+adding a genuinely new field to a live mapping is always a safe, zero-downtime operation (see [Installation
+step 4](#4-regenerate-the-search-index-mapping)), the practical fix on an already-adopted scope is a direct
+`PUT <alias-or-index-name>/_mapping` with this package's own `Shared/VariantFacets/Schema/page.json`
+fragment's `properties` — verified live, no reindex or downtime needed.
 
 If you're adding a NEW fixture claim (a different product, attribute key, or `product_search_attribute`
 position) for this or another package in this toolkit, check/update `FIXTURE_CLAIMS.md` in the
