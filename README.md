@@ -1,8 +1,20 @@
 # Spryker Variant Facets
 
+[![CI](https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/andrebarthelmeshellmuth/spryker-search-variant-facets/actions/workflows/ci.yml)
+[![PHP](https://img.shields.io/badge/php-%E2%89%A5%208.3-777bb4)](composer.json)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-2a6b2a)](phpstan.neon)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 Cross-facet AND for product variants: fixes a long-standing Spryker core behaviour where selecting values
 from *different* facets (e.g. `color=red`, `size=40`) matches an abstract product even when red and 40
 come from two different concretes, not one that's actually red **and** 40 at once.
+
+> **Not an official Spryker project.** `spryker-community/*` is an independent, community-built
+> package namespace with no affiliation to, sponsorship by, or endorsement from Spryker Systems GmbH.
+> The name describes what these packages are (community contributions for Spryker Commerce OS), not who
+> maintains them. The matching Packagist namespace is held by an unrelated GitHub organization, which is
+> why installation goes through a VCS repository entry rather than a plain `composer require` — see
+> [Installation](#installation).
 
 ## Contents
 
@@ -86,7 +98,23 @@ composer require spryker-community/search-variant-facets:dev-main
 Not yet tagged, hence `dev-main` rather than a semver constraint — once a release exists, prefer pinning
 to it (e.g. `^1.0`) instead.
 
-### 2. Generate transfers
+### 2. Register the `SprykerCommunity` core namespace
+
+Add it to `KernelConstants::CORE_NAMESPACES` in `config/Shared/config_default.php` (skip if already
+present, e.g. from another `spryker-community/*` package). Spryker's `ClassResolver` only ever looks in
+the project namespace plus whatever's listed here — miss this and every class in the package fails to
+resolve, most visibly as ``Can not resolve `VariantFacetsFacade` in Business layer for your module
+`VariantFacets` `` the moment anything tries to use it, even though composer installed the package
+correctly.
+
+```php
+$config[KernelConstants::CORE_NAMESPACES] = [
+    // ... existing entries
+    'SprykerCommunity',
+];
+```
+
+### 3. Generate transfers
 
 ```bash
 console transfer:generate
@@ -95,7 +123,7 @@ console transfer:generate
 This adds `PageIndexMap::VARIANT_FACET` and the `variantFacet`/`variantAttributes` properties on
 `PageMapTransfer`/`ProductPageSearchTransfer`.
 
-### 3. Regenerate the search index mapping
+### 4. Regenerate the search index mapping
 
 ```bash
 console search:setup
@@ -118,7 +146,7 @@ additive mapping updates to an existing one. That's exactly why "never touch an 
 design constraint here, not just a nicety: core gives you no safe way to migrate a breaking mapping
 change without real downtime, so this package is built to never need one.
 
-### 4. Register the Zed plugins
+### 5. Register the Zed plugins
 
 In your project's `ProductPageSearchDependencyProvider`:
 
@@ -140,7 +168,7 @@ protected function getProductAbstractMapExpanderPlugins(): array
 }
 ```
 
-### 5. Replace the Client plugins
+### 6. Replace the Client plugins
 
 In your project's `CatalogDependencyProvider` (or wherever `FacetQueryExpanderPlugin`/
 `FacetResultFormatterPlugin` are registered) — **replace**, don't add:
@@ -169,7 +197,7 @@ Both are drop-in replacements: they extend the core plugins and fall through to 
 for every facet this package doesn't touch. **Rollback is exactly reverting this one step** — the
 `variant-facet` field stays in the index unused, and everything works exactly as it did before.
 
-### 6. Configure a facet and republish
+### 7. Configure a facet and republish
 
 Configure a variant-varying attribute as usual in `spy_product_search_attribute` (`filter_type`
 `single-select`/`multi-select` for string values, `range` for numeric), then republish the affected
@@ -183,7 +211,7 @@ console queue:worker:start --stop-when-empty
 The package auto-detects which facets are variant-scoped by reading the live index mapping — no separate
 enable step per facet.
 
-### 7. Verify the installation
+### 8. Verify the installation
 
 ```bash
 vendor/bin/console search-variant-facets:check-installation
@@ -199,8 +227,8 @@ a hand-edited mapping).
 Unlike the sibling `spryker-community` packages, there is no Yves-side counterpart — this package ships no
 Yves code of its own to check (see ["Storefront tile-swap"](#storefront-tile-swap-optional) for why). What
 the console command genuinely cannot see — whether your project's `CatalogDependencyProvider` actually
-*replaced* core's `FacetQueryExpanderPlugin`/`FacetResultFormatterPlugin` (step 5) rather than registering
-both, and whether `VariantFacetMapExpanderPlugin` (step 4) is registered *last* — is printed out explicitly
+*replaced* core's `FacetQueryExpanderPlugin`/`FacetResultFormatterPlugin` (step 6) rather than registering
+both, and whether `VariantFacetMapExpanderPlugin` (step 5) is registered *last* — is printed out explicitly
 at the end of a clean run, with the exact thing to go check by hand.
 
 ## Configuration
