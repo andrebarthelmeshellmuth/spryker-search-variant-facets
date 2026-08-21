@@ -5,9 +5,10 @@
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-2a6b2a)](phpstan.neon)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Cross-facet AND for product variants: fixes a long-standing Spryker core behaviour where selecting values
-from *different* facets (e.g. `color=red`, `size=40`) matches an abstract product even when red and 40
-come from two different concretes, not one that's actually red **and** 40 at once.
+Fixes cross-facet AND correctness for product variants, so combining facets like `color` and `size` only
+returns products that actually exist in that combination — not stock Spryker's behaviour, where selecting
+values from *different* facets matches an abstract product even when e.g. red and 40 come from two
+different concretes, not one that's actually red **and** 40 at once.
 
 > **Not an official Spryker project.** `spryker-community/*` is an independent, community-built
 > package namespace with no affiliation to, sponsorship by, or endorsement from Spryker Systems GmbH.
@@ -47,6 +48,8 @@ and "this abstract has a Box concrete somewhere" independently, not which concre
 This package fixes that for any facet backed by `spy_product_search_attribute` whose values vary at the
 **concrete** level (not the abstract level — a facet like `brand`, set once per abstract, is unaffected
 and untouched by this package).
+
+![Illustrative diagram: filtering by Color=Red and Size=40 should only return products where one single variant is both red and 40. Shoe #1 has a Red/40 variant and matches; Shoe #2 has a Green/40 variant and a separate Red/42 variant, so no single variant satisfies both filters and it's correctly excluded — this is the cross-facet AND behavior this package adds, shown abstractly rather than against a specific catalog](docs/screenshots/cross-facet-and-illustrated.webp)
 
 ## Status
 
@@ -254,6 +257,8 @@ Each product's `variant-facet` field is a `nested` array with **one entry per se
   { "sku": "STL-7010-2", "vals": { "limitrange": "90°C", "packaging_unit": "5-pack" }, "nums": {} }
 ]
 ```
+
+![Illustrative diagram: before, an abstract's color and size values are flattened into one comma-joined string per attribute across all its variants, so it's impossible to tell which color went with which size; after, a variant-facet array holds one object per concrete (SKU, its own color, its own size), the actual `vals`/`nums` shape this package's mapping and query builders read. The change is purely additive — it sits alongside the existing document, so it only needs a mapping update and a normal export pass, not a new index or downtime](docs/screenshots/index-document-before-after.webp)
 
 A query selecting `limitrange=90°C AND packaging_unit=Box` becomes **one** `nested` query with both
 constraints inside the same `bool.filter`, instead of core's two independent `nested` queries — an
