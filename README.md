@@ -411,6 +411,15 @@ working even if the demoshop's own fixture data shifts around it. Then, from the
 ./docker/sdk console queue:worker:start --stop-when-empty
 ```
 
+**If your project manages its `page` index via `spryker-community/search-index-alias`** (blue-green
+aliasing, no concrete-named index for core's own `search:setup` to recognize): plain `console search:setup`
+fails there with `Can not determine state for index "..."` the moment it reaches an alias-managed index,
+so this package's `variant-facet` mapping addition never reaches a live alias-managed index that way. Since
+adding a genuinely new field to a live mapping is always a safe, zero-downtime operation (see [Installation
+step 4](#4-regenerate-the-search-index-mapping)), the practical fix on an already-adopted scope is a direct
+`PUT <alias-or-index-name>/_mapping` with this package's own `Shared/VariantFacets/Schema/page.json`
+fragment's `properties` — verified live, no reindex or downtime needed.
+
 If you're adding a NEW fixture claim (a different product, attribute key, or `product_search_attribute`
 position) for this or another package in this toolkit, check/update `FIXTURE_CLAIMS.md` in the
 `spryker-community/search-toolkit` repo first — `product_concrete.csv` only has two attribute slots per
