@@ -38,12 +38,12 @@ different concretes, not one that's actually red **and** 40 at once.
 
 ## What does this do?
 
-Take a product with variants across two attributes — say a safety limiter sold at two trip temperatures
-(`90°C`, `130°C`) and three packaging options (`Item`, `5-pack`, `Box`) — where the catalog only actually
-carries *some* of the 2×3 combinations, not all six. In stock Spryker, selecting `limitrange=90°C` AND
-`packaging_unit=Box` in the storefront facet sidebar returns that product **even if no single concrete
-combines those two values** — core's facet index only knows "this abstract has a 90°C concrete somewhere"
-and "this abstract has a Box concrete somewhere" independently, not which concrete has which.
+Take a product with variants across two attributes — say a shoe sold in two colors (`Red`, `Green`) and
+two sizes (`40`, `42`) — where the catalog only actually carries *some* of the 2×2 combinations, not all
+four. In stock Spryker, selecting `color=Red` AND `size=40` in the storefront facet sidebar returns that
+product **even if no single concrete combines those two values** — core's facet index only knows "this
+abstract has a Red concrete somewhere" and "this abstract has a 40 concrete somewhere" independently, not
+which concrete has which.
 
 This package fixes that for any facet backed by `spy_product_search_attribute` whose values vary at the
 **concrete** level (not the abstract level — a facet like `brand`, set once per abstract, is unaffected
