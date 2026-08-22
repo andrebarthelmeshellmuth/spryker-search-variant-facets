@@ -243,6 +243,11 @@ jobs:
 
       - name: Codeception run (Client + Zed — unit-level, no DB/ES fixtures needed)
         working-directory: shop
+        # -s NeedsSearch: VariantFacetsCheckInstallationConsoleTest needs a real reachable Elasticsearch/
+        # OpenSearch cluster (it constructs its own Elastica client directly, same as every sibling
+        # package's own CheckInstallationConsoleTest) -- this bare runner has none, so that one test stays
+        # a local/manual gate against the real docker-compose stack, same as this package's own
+        # NeedsDatabase/NeedsSearch/NeedsBroker suites already are.
         run: |
           vendor/bin/codecept run -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Client/VariantFacets/codeception.yml
-          vendor/bin/codecept run -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Zed/VariantFacets/codeception.yml
+          vendor/bin/codecept run -c packages/spryker-community/search-variant-facets/tests/SprykerCommunityTest/Zed/VariantFacets/codeception.yml --skip-group NeedsSearch
