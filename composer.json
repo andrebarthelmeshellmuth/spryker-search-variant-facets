@@ -16,13 +16,12 @@
         "php": ">=8.3",
         "spryker/kernel": "^3.30.0",
         "spryker/product": "^6.0.0",
-        "spryker/product-page-search": "^3.0.0",
         "spryker/product-page-search-extension": "^1.7.0",
         "spryker/product-search": "^5.0.0",
         "spryker/search-elasticsearch": "^1.10.0",
         "spryker/search-extension": "^1.2.0",
         "spryker/store": "^1.19.0",
-        "spryker/transfer": "^3.25.0"
+        "symfony/console": "^6.4.0"
     },
     "require-dev": {
         "codeception/codeception": "^5.0.0",
@@ -31,10 +30,13 @@
         "phpmd/phpmd": "^2.15.0",
         "phpstan/phpstan": "^2.0.0",
         "phpunit/phpunit": "^10.0.0 || ^11.0.0",
+        "psr/log": "^3.0.0",
         "rector/rector": "^2.0",
         "slevomat/coding-standard": "8.22.1",
         "spryker/code-sniffer": "0.17.35",
-        "squizlabs/php_codesniffer": "3.13.6"
+        "spryker/transfer": "^3.25.0",
+        "squizlabs/php_codesniffer": "3.13.6",
+        "twig/twig": "^3.14.0"
     },
     "suggest": {
         "spryker-community/search-index-alias": "Zero-downtime blue/green reindex for your page index (alias + rebuild + atomic flip) -- lets you deploy this package's initial nested-mapping change, and recover from the poisoned-mapping scenario documented in the README's Installation section, without the brief export-lag window or the drop-and-recreate downtime a bare `console search:setup` implies."
