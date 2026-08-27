@@ -156,9 +156,7 @@ class VariantAwareFacetResultFormatterPlugin extends FacetResultFormatterPlugin
      */
     protected function getFactory(): AbstractFactory
     {
-        if ($this->factory === null) {
-            $this->factory = $this->getFactoryResolver()->resolve(FacetResultFormatterPlugin::class);
-        }
+        $this->factory ??= $this->getFactoryResolver()->resolve(FacetResultFormatterPlugin::class);
 
         return $this->factory;
     }

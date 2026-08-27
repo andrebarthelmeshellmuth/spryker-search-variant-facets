@@ -334,9 +334,7 @@ class VariantAwareFacetQueryExpanderPlugin extends FacetQueryExpanderPlugin
      */
     protected function getFactory(): AbstractFactory
     {
-        if ($this->factory === null) {
-            $this->factory = $this->getFactoryResolver()->resolve(FacetQueryExpanderPlugin::class);
-        }
+        $this->factory ??= $this->getFactoryResolver()->resolve(FacetQueryExpanderPlugin::class);
 
         return $this->factory;
     }
