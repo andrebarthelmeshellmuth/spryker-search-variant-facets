@@ -85,8 +85,8 @@ aggregations, `inner_hits`, and the `variant-facet` mapping this package adds ar
 engine lineages. The OpenSearch 3.5 upgrade needed **no code change** in this package (verified
 end-to-end on a demoshop upgraded from 1.3.4 — `check-installation` confirms the `variant-facet` mapping
 is present and correctly shaped on 3.5); see
-[Migrating to OpenSearch 3.x](https://github.com/andrebarthelmeshellmuth/spryker-search-ranking/blob/main/docs/opensearch-3.x-migration.md)
-(in `spryker-community/search-ranking`) for the core- and project-level steps the upgrade itself involves.
+[Migrating to OpenSearch 3.x](docs/opensearch-3.x-migration.md) for why the `nested`/`inner_hits` facet
+query carries across unchanged, plus the one upgrade-time schema trap every Spryker shop hits.
 
 ## Installation
 
