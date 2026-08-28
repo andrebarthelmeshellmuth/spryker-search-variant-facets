@@ -78,6 +78,16 @@ core"](#porting-this-fix-into-spryker-core) for how to read this as a defect rep
 - A project that configures at least one variant-varying attribute as a facet in
   `spy_product_search_attribute` (`filter_type` = `single-select`, `multi-select`, or `range`)
 
+### Search engine compatibility
+
+Verified on **OpenSearch 1.3.4, 2.11, 3.5.0 and Elasticsearch 8.11**. The `nested`/`reverse_nested`
+aggregations, `inner_hits`, and the `variant-facet` mapping this package adds are all standard across both
+engine lineages. The OpenSearch 3.5 upgrade needed **no code change** in this package (verified
+end-to-end on a demoshop upgraded from 1.3.4 — `check-installation` confirms the `variant-facet` mapping
+is present and correctly shaped on 3.5); see
+[Migrating to OpenSearch 3.x](https://github.com/andrebarthelmeshellmuth/spryker-search-ranking/blob/main/docs/opensearch-3.x-migration.md)
+(in `spryker-community/search-ranking`) for the core- and project-level steps the upgrade itself involves.
+
 ## Installation
 
 > **Run these steps in order. Step 3 before step 4 is not a style preference — it is load-bearing.**
